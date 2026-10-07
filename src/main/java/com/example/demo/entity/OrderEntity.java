@@ -12,11 +12,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
+import org.hibernate.proxy.HibernateProxy;
 
 @Entity
 @Getter
@@ -64,4 +69,46 @@ public class OrderEntity {
             insertable = false)
     private Instant updatedAt;
 
+    @Override 
+    public String toString() {
+        return "OrderEntity{" +
+                "id=" + id +
+                ", customerId='" + customerId + '\'' +
+                ", totalAmount=" + totalAmount +
+                ", currency='" + currency + '\'' +
+                ", status=" + status +
+                ", fraudStatus=" + fraudStatus +
+                ", inventoryStatus=" + inventoryStatus +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || persistentClass(this) != persistentClass(o)) {
+            return false;
+        }
+
+        OrderEntity that = (OrderEntity) o;
+        UUID thisId = getId();
+        return thisId != null
+                && thisId.equals(that.getId())
+                && Objects.equals(getCustomerId(), that.getCustomerId());
+    }
+
+    @Override
+    public int hashCode() {
+        return persistentClass(this).hashCode();
+    }
+
+    private static Class<?> persistentClass(Object entity) {
+        if (entity instanceof HibernateProxy proxy) {
+            return proxy.getHibernateLazyInitializer().getPersistentClass();
+        }
+        return entity.getClass();
+    }
 }
