@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -71,6 +72,70 @@ class OrderEntitySchemaTest {
         order.setStatus(null);
 
         assertNullIsRejected(order);
+    }
+
+    @Test
+    void persistingOrderAlsoPersistsItsItems() {
+        OrderEntity order = validOrder();
+        OrderItemsEntity item = new OrderItemsEntity();
+        order.addItem(item);
+
+        entityManager.persist(order);
+        entityManager.flush();
+        entityManager.clear();
+
+        OrderItemsEntity savedItem = entityManager.find(OrderItemsEntity.class, item.getId());
+        assertNotNull(savedItem);
+        assertEquals(order.getId(), savedItem.getOrder().getId());
+    }
+
+    @Test
+    void removingOrderAlsoRemovesItsItemsFromDatabase() {
+        OrderEntity order = validOrder();
+        OrderItemsEntity item = new OrderItemsEntity();
+        order.addItem(item);
+        entityManager.persist(order);
+        entityManager.flush();
+        Long itemId = item.getId();
+
+        entityManager.remove(order);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertNull(entityManager.find(OrderItemsEntity.class, itemId));
+    }
+
+    @Test
+    void deletingOrderDirectlyInDatabaseAlsoRemovesItsItems() {
+        OrderEntity order = validOrder();
+        OrderItemsEntity item = new OrderItemsEntity();
+        order.addItem(item);
+        entityManager.persist(order);
+        entityManager.flush();
+        Long itemId = item.getId();
+
+        entityManager.createNativeQuery("DELETE FROM orders WHERE id = :id")
+                .setParameter("id", order.getId())
+                .executeUpdate();
+        entityManager.clear();
+
+        assertNull(entityManager.find(OrderItemsEntity.class, itemId));
+    }
+
+    @Test
+    void removingItemFromOrderDeletesIt() {
+        OrderEntity order = validOrder();
+        OrderItemsEntity item = new OrderItemsEntity();
+        order.addItem(item);
+        entityManager.persist(order);
+        entityManager.flush();
+        Long itemId = item.getId();
+
+        order.removeItem(item);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertNull(entityManager.find(OrderItemsEntity.class, itemId));
     }
 
     private void assertNullIsRejected(OrderEntity order) {

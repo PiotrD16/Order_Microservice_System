@@ -3,23 +3,31 @@ package com.example.demo.entity;
 import com.example.demo.enums.Status;
 import com.example.demo.enums.FraudStatus;
 import com.example.demo.enums.InventoryStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.generator.EventType;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -56,6 +64,12 @@ public class OrderEntity {
     @Column(name = "inventory_status")
     private InventoryStatus inventoryStatus;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @Getter
+    @Setter(AccessLevel.NONE)
+    private List<OrderItemsEntity> items = new ArrayList<>();
+
     @Generated(event = EventType.INSERT)
     @Column(name = "created_at", 
             columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP", 
@@ -68,6 +82,17 @@ public class OrderEntity {
             columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP", 
             insertable = false)
     private Instant updatedAt;
+
+    public void addItem(OrderItemsEntity item) {
+        items.add(item);
+        item.setOrder(this);
+    }
+
+    public void removeItem(OrderItemsEntity item) {
+        if (items.remove(item)) {
+            item.setOrder(null);
+        }
+    }
 
     @Override 
     public String toString() {
