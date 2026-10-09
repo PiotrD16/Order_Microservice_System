@@ -77,7 +77,7 @@ class OrderEntitySchemaTest {
     @Test
     void persistingOrderAlsoPersistsItsItems() {
         OrderEntity order = validOrder();
-        OrderItemsEntity item = new OrderItemsEntity();
+        OrderItemsEntity item = validItem();
         order.addItem(item);
 
         entityManager.persist(order);
@@ -92,7 +92,7 @@ class OrderEntitySchemaTest {
     @Test
     void removingOrderAlsoRemovesItsItemsFromDatabase() {
         OrderEntity order = validOrder();
-        OrderItemsEntity item = new OrderItemsEntity();
+        OrderItemsEntity item = validItem();
         order.addItem(item);
         entityManager.persist(order);
         entityManager.flush();
@@ -108,7 +108,7 @@ class OrderEntitySchemaTest {
     @Test
     void deletingOrderDirectlyInDatabaseAlsoRemovesItsItems() {
         OrderEntity order = validOrder();
-        OrderItemsEntity item = new OrderItemsEntity();
+        OrderItemsEntity item = validItem();
         order.addItem(item);
         entityManager.persist(order);
         entityManager.flush();
@@ -125,7 +125,7 @@ class OrderEntitySchemaTest {
     @Test
     void removingItemFromOrderDeletesIt() {
         OrderEntity order = validOrder();
-        OrderItemsEntity item = new OrderItemsEntity();
+        OrderItemsEntity item = validItem();
         order.addItem(item);
         entityManager.persist(order);
         entityManager.flush();
@@ -157,5 +157,13 @@ class OrderEntitySchemaTest {
         order.setTotalAmount(new BigDecimal("12.34"));
         order.setStatus(Status.PENDING);
         return order;
+    }
+
+    private OrderItemsEntity validItem() {
+        OrderItemsEntity item = new OrderItemsEntity();
+        item.setProductId("product-1");
+        item.setQuantity(1);
+        item.setPricePerUnit(new BigDecimal("12.34"));
+        return item;
     }
 }

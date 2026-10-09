@@ -33,7 +33,7 @@ public class OrderItemsEntity {
     private OrderEntity order;
 
     @Column(name="product_id", nullable = false)
-    private String product_id;
+    private String productId;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;

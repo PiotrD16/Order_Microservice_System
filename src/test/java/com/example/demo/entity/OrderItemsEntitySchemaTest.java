@@ -38,7 +38,7 @@ class OrderItemsEntitySchemaTest {
 
         OrderItemsEntity savedItem = entityManager.find(OrderItemsEntity.class, itemId);
         assertNotNull(savedItem);
-        assertEquals("product-1", savedItem.getProduct_id());
+        assertEquals("product-1", savedItem.getProductId());
         assertEquals(2, savedItem.getQuantity());
         assertEquals(new BigDecimal("4.50"), savedItem.getPricePerUnit());
         assertEquals(order.getId(), savedItem.getOrder().getId());
@@ -49,7 +49,7 @@ class OrderItemsEntitySchemaTest {
     void productIdCannotBeNull() {
         OrderEntity order = validOrder();
         OrderItemsEntity item = validItem();
-        item.setProduct_id(null);
+        item.setProductId(null);
         order.addItem(item);
 
         assertNullIsRejected(order);
@@ -102,7 +102,7 @@ class OrderItemsEntitySchemaTest {
 
     private OrderItemsEntity validItem() {
         OrderItemsEntity item = new OrderItemsEntity();
-        item.setProduct_id("product-1");
+        item.setProductId("product-1");
         item.setQuantity(2);
         item.setPricePerUnit(new BigDecimal("4.50"));
         return item;
