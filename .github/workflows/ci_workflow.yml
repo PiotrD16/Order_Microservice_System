@@ -2,6 +2,7 @@ name: Java CI
 
 on:
   push:
+    branches: [main, dev]
   pull_request:
 
 permissions:
@@ -38,3 +39,32 @@ jobs:
           org.sonarsource.scanner.maven:sonar-maven-plugin:5.1.0.4751:sonar
           -Dsonar.projectKey=${{ github.repository_owner }}_${{ github.event.repository.name }}
           -Dsonar.projectName=${{ github.repository }}
+
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: ${{ github.event.repository.name }}
+          path: "."
+          format: "HTML"
+          out: "reports"
+          args: '--failOnCVSS 7'
+
+      - name: Build Docker Image
+        run: docker build -t local_app:test .
+
+      - name: Verify Docker artifact runtime
+        run: |
+          docker run -d --name app-smoke-test -p 8080:8080 local_app:test
+          
+          sleep 15
+          
+          if [ "$(docker inspect -f '{{.State.Running}}' app-smoke-test)" = "false" ]; then
+            echo "ERROR! Container crashed unexpectedly... Detailed log saved to logs"
+            docker logs app-smoke-test
+            exit 1
+          fi
+          
+          echo "SUKCES: Aplikacja uruchomiła się poprawnie."
+          docker stop app-smoke-test && docker rm app-smoke-test
+      - name: Compile, run tests and Checkstyle
+        run: ./mvnw --batch-mode --no-transfer-progress verify
