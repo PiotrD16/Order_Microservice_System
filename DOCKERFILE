@@ -1,0 +1,25 @@
+FROM maven:3.9.16-eclipse-temurin-21-alpine as build
+WORKDIR /app
+
+# Installing dependencies
+COPY pom.xml mvnw ./
+COPY .mvn .mvn
+RUN ./mvnw dependency:go-offline
+
+# Copying and compiling the app
+COPY src ./src
+RUN ./mvnw clean package -DskipTests
+
+# Runtime environment
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Create user
+RUN useradd -m appuser
+USER appuser
+
+COPY --from=build /app/target/*.jar app.jar
+EXPOSE 8080
+
+ENTRYPOINT [ "java", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar" ]
