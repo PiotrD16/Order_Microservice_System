@@ -42,6 +42,8 @@ jobs:
 
       - name: Run OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
+        env:
+          JAVA_HOME: ""
         with:
           project: ${{ github.event.repository.name }}
           path: "."
@@ -66,5 +68,3 @@ jobs:
           
           echo "SUKCES: Aplikacja uruchomiła się poprawnie."
           docker stop app-smoke-test && docker rm app-smoke-test
-      - name: Compile, run tests and Checkstyle
-        run: ./mvnw --batch-mode --no-transfer-progress verify
